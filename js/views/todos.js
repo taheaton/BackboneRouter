@@ -3,7 +3,7 @@
 function proccessData(data) {
   return data.map(function(item) {
     return `
-      <li>${item.title}</li>
+      <li class='todo-list-item' data-todo-id="${item.objectId}">${item.title}</li>
     `
   }).join('');
 }

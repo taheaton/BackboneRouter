@@ -1,16 +1,18 @@
 import Backbone from 'backbone';
+import $ from 'jquery';
 
 import TodosCollection from './todos_collection';
 
 import homeTemplate from './views/home';
 import todosTemplate from './views/todos';
+import todoTemplate from './views/todo';
 
 let Router = Backbone.Router.extend({
 
   routes: {
     ""      : "home",
     "todos" : "showTodos",
-    "todos/:id" : "showIndivualTodo",
+    "todos/:id" : "showSpecificTodo",
     "about" : "showAbout"
   },
 
@@ -18,6 +20,15 @@ let Router = Backbone.Router.extend({
     this.$el = appElement;
 
     this.todos = new TodosCollection();
+
+    let router = this;
+
+    this.$el.on('click', '.todo-list-item', function(event) {
+      let $li = $(event.currentTarget);
+      var todoId = $li.data('todo-id');
+      router.navigate(`todos/${todoId}`);
+      router.showSpecificTodo(todoId);
+    });
   },
 
   home: function() {
@@ -31,8 +42,22 @@ let Router = Backbone.Router.extend({
     );
   },
 
-  showIndivualTodo: function(todoId) {
-    console.log('should show', todoId);
+  showSpecificTodo: function(todoId) {
+    let todo = this.todos.get(todoId);
+
+    if (todo) {
+      // todos have fetched and we grabbed the one we want
+      this.$el.html( todoTemplate(todo.toJSON()) );
+    } else {
+      // todos not fetched so we need to load the one we want
+      let router = this;
+      todo = this.todos.add({objectId: todoId});
+      this.showSpinner();
+      todo.fetch().then(function() {
+        router.$el.html( todoTemplate(todo.toJSON()) );
+      });
+    }
+
   },
 
   showTodos: function() {
